@@ -1,19 +1,36 @@
-name: CI
+name: ci
 
-on: [push, pull_request]
+on:
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
-  test:
+  build-and-publish:
+    name: Build and Publish to PyPI
     runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write  # 🔑 necessário para OIDC com PyPI
+      contents: read
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.12"
+
       - name: Install Poetry
         run: pip install poetry
+
       - name: Install dependencies
-        run: poetry install
-      - name: Run tests
-        run: poetry run pytest
+        run: poetry install --no-root
+
+      - name: Build package
+        run: poetry build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
