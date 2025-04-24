@@ -1,0 +1,34 @@
+[project]
+name = "memprofilerx"
+version = "0.1.0"
+license = "MIT"
+keywords = ["memory", "profiling", "performance", "debugging", "Python"]
+description = "Advanced memory profiler for Python with live tracking and visual export."
+authors = [
+    {name = "Nightz",email = "anonyzx15e@gmail.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: System :: Monitoring"
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "rich (>=14.0.0,<15.0.0)",
+    "psutil (>=7.0.0,<8.0.0)",
+    "matplotlib (>=3.10.1,<4.0.0)"
+]
+
+[tool.poetry]
+packages = [{ include = "memprofilerx", from = "src" }]
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
