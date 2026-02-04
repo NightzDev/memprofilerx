@@ -6,8 +6,9 @@ from datetime import datetime
 from pathlib import Path
 
 import matplotlib
-matplotlib.use('Agg')  # Use non-GUI backend for Windows/headless environments
-import matplotlib.pyplot as plt
+
+matplotlib.use("Agg")  # Use non-GUI backend for Windows/headless environments
+import matplotlib.pyplot as plt  # noqa: E402
 from jinja2 import Template
 
 logger = logging.getLogger(__name__)
