@@ -40,7 +40,8 @@ def run(
         float, typer.Option("--interval", "-i", help="Sampling interval in seconds")
     ] = 1.0,
     output: Annotated[
-        Path | None, typer.Option("--output", "-o", help="Output file path (PNG/HTML/CSV/JSON)")
+        Path | None,
+        typer.Option("--output", "-o", help="Output file path (PNG/HTML/CSV/JSON)"),
     ] = None,
     format: Annotated[
         str,
