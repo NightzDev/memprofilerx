@@ -279,7 +279,7 @@ def global_tracker(
                         with open(export_path, "w", encoding="utf-8") as f:
                             json.dump(mem_data, f, indent=2)
                         logger.info(f"Memory data exported to {export_json}")
-                    except (OSError, IOError) as e:
+                    except OSError as e:
                         logger.error(f"Failed to export JSON: {e}")
                         console.log(f"[global_tracker] Failed to export JSON: {e}")
 
@@ -292,7 +292,7 @@ def global_tracker(
                             for timestamp, mem in mem_data:
                                 f.write(f"{timestamp:.3f},{mem:.2f}\n")
                         logger.info(f"Memory data exported to {export_csv}")
-                    except (OSError, IOError) as e:
+                    except OSError as e:
                         logger.error(f"Failed to export CSV: {e}")
                         console.log(f"[global_tracker] Failed to export CSV: {e}")
 

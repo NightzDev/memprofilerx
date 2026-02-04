@@ -21,7 +21,8 @@ HTML_TEMPLATE = """
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                Roboto, Oxygen, Ubuntu, sans-serif;
             background: #0d1117;
             color: #c9d1d9;
             padding: 2rem;
@@ -29,7 +30,12 @@ HTML_TEMPLATE = """
         .container { max-width: 1200px; margin: 0 auto; }
         h1 { color: #58a6ff; margin-bottom: 0.5rem; }
         .meta { color: #8b949e; margin-bottom: 2rem; font-size: 0.9rem; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
         .stat-card {
             background: #161b22;
             border: 1px solid #30363d;
@@ -97,7 +103,8 @@ HTML_TEMPLATE = """
                 <tr>
                     <td>{{ "%.2f"|format(row.timestamp) }}</td>
                     <td>{{ "%.2f"|format(row.memory) }}</td>
-                    <td style="color: {% if row.delta > 0 %}#f85149{% elif row.delta < 0 %}#3fb950{% else %}#8b949e{% endif %}">
+                    <td style="color: {% if row.delta > 0 %}#f85149{%
+                        elif row.delta < 0 %}#3fb950{% else %}#8b949e{% endif %}">
                         {{ "%+.2f"|format(row.delta) }}
                     </td>
                 </tr>
@@ -148,7 +155,7 @@ def plot_memory(
 
     Raises:
         ValueError: If mem_data is empty or has invalid format.
-        IOError: If saving the file fails.
+        OSError: If saving the file fails.
 
     Example:
         >>> data = [(0, 23.1), (1.0, 130.5), (2.0, 130.7)]
@@ -158,7 +165,7 @@ def plot_memory(
         raise ValueError("No memory data provided to plot.")
 
     try:
-        timestamps, mem_values = zip(*mem_data)
+        timestamps, mem_values = zip(*mem_data, strict=True)
     except (ValueError, TypeError) as e:
         raise ValueError(
             "Memory data format invalid. Expected list of (timestamp, memory_MB) tuples."
@@ -166,7 +173,14 @@ def plot_memory(
 
     try:
         plt.figure(figsize=(12, 6))
-        plt.plot(timestamps, mem_values, marker="o", linewidth=2, markersize=4, color="#58a6ff")
+        plt.plot(
+            timestamps,
+            mem_values,
+            marker="o",
+            linewidth=2,
+            markersize=4,
+            color="#58a6ff",
+        )
         plt.title(title, fontsize=14, fontweight="bold")
         plt.xlabel("Time (seconds)", fontsize=11)
         plt.ylabel("Memory Usage (MB)", fontsize=11)
@@ -181,7 +195,7 @@ def plot_memory(
         logger.info(f"Memory plot saved to {output_path}")
     except Exception as e:
         logger.error(f"Failed to save plot: {e}")
-        raise IOError(f"Failed to save memory plot to {output_path}") from e
+        raise OSError(f"Failed to save memory plot to {output_path}") from e
 
 
 def export_to_csv(
@@ -196,7 +210,7 @@ def export_to_csv(
 
     Raises:
         ValueError: If mem_data is empty.
-        IOError: If writing the file fails.
+        OSError: If writing the file fails.
 
     Example:
         >>> data = [(0, 23.1), (1.0, 130.5)]
@@ -215,9 +229,9 @@ def export_to_csv(
             writer.writerows(mem_data)
 
         logger.info(f"Memory data exported to CSV: {output_path}")
-    except (OSError, IOError) as e:
+    except OSError as e:
         logger.error(f"Failed to export CSV: {e}")
-        raise IOError(f"Failed to export memory data to {output_path}") from e
+        raise OSError(f"Failed to export memory data to {output_path}") from e
 
 
 def export_to_html(
@@ -237,7 +251,7 @@ def export_to_html(
 
     Raises:
         ValueError: If mem_data is empty.
-        IOError: If writing the file fails.
+        OSError: If writing the file fails.
 
     Example:
         >>> data = [(0, 23.1), (1.0, 130.5), (2.0, 135.2)]
@@ -282,6 +296,6 @@ def export_to_html(
         output_path.write_text(html_content, encoding="utf-8")
 
         logger.info(f"Interactive HTML report exported to {output_path}")
-    except (OSError, IOError) as e:
+    except OSError as e:
         logger.error(f"Failed to export HTML: {e}")
-        raise IOError(f"Failed to export HTML report to {output_path}") from e
+        raise OSError(f"Failed to export HTML report to {output_path}") from e

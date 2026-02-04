@@ -1,6 +1,7 @@
 """Command-line interface for MemProfilerX."""
 
 import importlib.util
+import json
 import logging
 import sys
 from pathlib import Path
@@ -35,8 +36,12 @@ def setup_logging(verbose: bool = False) -> None:
 @app.command()
 def run(
     script: Annotated[Path, typer.Argument(help="Python script to profile", exists=True)],
-    interval: Annotated[float, typer.Option("--interval", "-i", help="Sampling interval in seconds")] = 1.0,
-    output: Annotated[Path | None, typer.Option("--output", "-o", help="Output file path (PNG/HTML/CSV/JSON)")] = None,
+    interval: Annotated[
+        float, typer.Option("--interval", "-i", help="Sampling interval in seconds")
+    ] = 1.0,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Output file path (PNG/HTML/CSV/JSON)")
+    ] = None,
     format: Annotated[
         str,
         typer.Option(
@@ -46,7 +51,9 @@ def run(
             case_sensitive=False,
         ),
     ] = "png",
-    verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Enable verbose logging")] = False,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", "-v", help="Enable verbose logging")
+    ] = False,
 ) -> None:
     """
     Run a Python script with memory profiling.
@@ -80,14 +87,16 @@ def run(
 
     console.print(f"[cyan]🧠 Profiling:[/cyan] {script}")
     console.print(f"[cyan]📊 Interval:[/cyan] {interval}s")
-    console.print(f"[cyan]📁 Output:[/cyan] {', '.join(str(p) for p in exports.values())}")
+    console.print(
+        f"[cyan]📁 Output:[/cyan] {', '.join(str(p) for p in exports.values())}"
+    )
 
     # Load and execute the script with profiling
     try:
         spec = importlib.util.spec_from_file_location("__main__", script)
         if spec is None or spec.loader is None:
             console.print(f"[red]Error:[/red] Could not load script: {script}")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
         module = importlib.util.module_from_spec(spec)
         sys.modules["__main__"] = module
@@ -108,7 +117,9 @@ def run(
         if "html" in exports:
             # We need to read the JSON data if it exists, or use a dummy for now
             # In a real scenario, we'd capture mem_data from global_tracker
-            console.print(f"[yellow]Note:[/yellow] HTML export requires JSON data. Use --format all")
+            console.print(
+                "[yellow]Note:[/yellow] HTML export requires JSON data. Use --format all"
+            )
 
         console.print("\n[green]✓[/green] Profiling complete!")
 
@@ -116,15 +127,22 @@ def run(
         console.print(f"[red]Error executing script:[/red] {e}")
         if verbose:
             console.print_exception()
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
 def convert(
-    input_file: Annotated[Path, typer.Argument(help="Input JSON file with memory data", exists=True)],
-    output: Annotated[Path | None, typer.Option("--output", "-o", help="Output file path")] = None,
+    input_file: Annotated[
+        Path, typer.Argument(help="Input JSON file with memory data", exists=True)
+    ],
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Output file path")
+    ] = None,
     format: Annotated[
-        str, typer.Option("--format", "-f", help="Output format: png, html, csv", case_sensitive=False)
+        str,
+        typer.Option(
+            "--format", "-f", help="Output format: png, html, csv", case_sensitive=False
+        ),
     ] = "html",
 ) -> None:
     """
@@ -133,8 +151,6 @@ def convert(
     Example:
         memx convert memory.json --format html --output report.html
     """
-    import json
-
     if not input_file.exists():
         console.print(f"[red]Error:[/red] Input file not found: {input_file}")
         raise typer.Exit(1)
@@ -143,9 +159,14 @@ def convert(
         with open(input_file, encoding="utf-8") as f:
             mem_data = json.load(f)
 
-        if not isinstance(mem_data, list) or not all(isinstance(item, list) and len(item) == 2 for item in mem_data):
-            console.print("[red]Error:[/red] Invalid JSON format. Expected list of [timestamp, memory] pairs.")
-            raise typer.Exit(1)
+        if not isinstance(mem_data, list) or not all(
+            isinstance(item, list) and len(item) == 2 for item in mem_data
+        ):
+            console.print(
+                "[red]Error:[/red] Invalid JSON format. "
+                "Expected list of [timestamp, memory] pairs."
+            )
+            raise typer.Exit(1) from None
 
         # Determine output path
         if output is None:
@@ -161,16 +182,16 @@ def convert(
             export_to_csv(mem_data, output)
         else:
             console.print(f"[red]Error:[/red] Unknown format: {format}")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
         console.print(f"[green]✓[/green] Exported to {output}")
 
     except json.JSONDecodeError as e:
         console.print(f"[red]Error:[/red] Invalid JSON: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()

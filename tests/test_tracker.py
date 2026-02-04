@@ -29,7 +29,7 @@ class TestTrackMemory:
 
         @track_memory(interval=0.1, analyze_gc=True)
         def create_objects() -> list[int]:
-            return [i for i in range(10000)]
+            return list(range(10000))
 
         result = create_objects()
         assert "live_objects" in result
@@ -95,7 +95,7 @@ class TestTrackMemory:
     def test_callback_exception_handled(self) -> None:
         """Test that callback exceptions don't crash monitoring."""
 
-        def bad_callback(timestamp: float, memory: float) -> None:
+        def bad_callback(_timestamp: float, _memory: float) -> None:
             raise ValueError("Callback error")
 
         @track_memory(interval=0.1, callback=bad_callback)
@@ -160,7 +160,12 @@ class TestGlobalTracker:
         png_path = tmp_path / "memory.png"
         csv_path = tmp_path / "memory.csv"
 
-        @global_tracker(interval=0.1, export_json=json_path, export_png=png_path, export_csv=csv_path)
+        @global_tracker(
+            interval=0.1,
+            export_json=json_path,
+            export_png=png_path,
+            export_csv=csv_path,
+        )
         def dummy() -> bool:
             time.sleep(0.2)
             return True
@@ -186,8 +191,8 @@ class TestAnalyzeLiveObjects:
     def test_basic_analysis(self) -> None:
         """Test basic object analysis."""
         # Create some objects
-        data = [i for i in range(10000)]
-        mapping = {i: str(i) for i in range(1000)}
+        _data = list(range(10000))
+        _mapping = {i: str(i) for i in range(1000)}
 
         result = analyze_live_objects(min_size_kb=1)
         assert isinstance(result, dict)

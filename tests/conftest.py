@@ -17,8 +17,10 @@ def setup_logging() -> None:
 @pytest.fixture
 def suppress_console_output(monkeypatch: pytest.MonkeyPatch) -> None:
     """Suppress rich console output during tests."""
+    from io import StringIO
+
     from rich.console import Console
 
     # Create a null console that doesn't output anything
-    null_console = Console(file=open("/dev/null", "w") if hasattr(open, "__file__") else None, force_terminal=False)
+    null_console = Console(file=StringIO(), force_terminal=False)
     monkeypatch.setattr("memprofilerx.tracker.console", null_console)

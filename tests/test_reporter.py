@@ -29,7 +29,9 @@ def empty_memory_data() -> list[tuple[float, float]]:
 class TestPlotMemory:
     """Tests for plot_memory function."""
 
-    def test_basic_plot(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_basic_plot(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test basic PNG plot generation."""
         output_path = tmp_path / "test_plot.png"
         plot_memory(sample_memory_data, output_path)
@@ -37,14 +39,18 @@ class TestPlotMemory:
         assert output_path.exists()
         assert output_path.stat().st_size > 1000  # PNG should be reasonably sized
 
-    def test_custom_title(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_custom_title(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test plot with custom title."""
         output_path = tmp_path / "custom_title.png"
         plot_memory(sample_memory_data, output_path, title="Custom Memory Profile")
 
         assert output_path.exists()
 
-    def test_creates_parent_directories(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_creates_parent_directories(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test that parent directories are created if they don't exist."""
         output_path = tmp_path / "subdir" / "nested" / "plot.png"
         plot_memory(sample_memory_data, output_path)
@@ -52,7 +58,9 @@ class TestPlotMemory:
         assert output_path.exists()
         assert output_path.parent.exists()
 
-    def test_empty_data_raises_error(self, empty_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_empty_data_raises_error(
+        self, empty_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test that empty data raises ValueError."""
         output_path = tmp_path / "plot.png"
         with pytest.raises(ValueError, match="No memory data provided"):
@@ -70,7 +78,9 @@ class TestPlotMemory:
 class TestExportToCSV:
     """Tests for export_to_csv function."""
 
-    def test_basic_csv_export(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_basic_csv_export(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test basic CSV export."""
         output_path = tmp_path / "memory.csv"
         export_to_csv(sample_memory_data, output_path)
@@ -86,7 +96,9 @@ class TestExportToCSV:
         lines = content.strip().split("\n")
         assert len(lines) == len(sample_memory_data) + 1  # +1 for header
 
-    def test_csv_content_accuracy(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_csv_content_accuracy(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test that CSV content matches input data."""
         output_path = tmp_path / "memory.csv"
         export_to_csv(sample_memory_data, output_path)
@@ -94,19 +106,23 @@ class TestExportToCSV:
         content = output_path.read_text()
         lines = content.strip().split("\n")[1:]  # Skip header
 
-        for line, (timestamp, memory) in zip(lines, sample_memory_data):
+        for line, (timestamp, memory) in zip(lines, sample_memory_data, strict=True):
             parts = line.split(",")
             assert float(parts[0]) == timestamp
             assert float(parts[1]) == memory
 
-    def test_creates_parent_directories(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_creates_parent_directories(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test that parent directories are created."""
         output_path = tmp_path / "reports" / "output" / "memory.csv"
         export_to_csv(sample_memory_data, output_path)
 
         assert output_path.exists()
 
-    def test_empty_data_raises_error(self, empty_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_empty_data_raises_error(
+        self, empty_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test that empty data raises ValueError."""
         output_path = tmp_path / "memory.csv"
         with pytest.raises(ValueError, match="No memory data provided"):
@@ -116,7 +132,9 @@ class TestExportToCSV:
 class TestExportToHTML:
     """Tests for export_to_html function."""
 
-    def test_basic_html_export(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_basic_html_export(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test basic HTML report generation."""
         output_path = tmp_path / "report.html"
         export_to_html(sample_memory_data, output_path)
@@ -129,7 +147,9 @@ class TestExportToHTML:
         assert "<html" in content
         assert "</html>" in content
 
-    def test_html_contains_data(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_html_contains_data(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test that HTML report contains the actual data."""
         output_path = tmp_path / "report.html"
         export_to_html(sample_memory_data, output_path)
@@ -144,7 +164,9 @@ class TestExportToHTML:
         # Check for plotly
         assert "plotly" in content.lower()
 
-    def test_html_table_data(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_html_table_data(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test that HTML table contains timestamp and memory data."""
         output_path = tmp_path / "report.html"
         export_to_html(sample_memory_data, output_path)
@@ -156,20 +178,26 @@ class TestExportToHTML:
         assert "Timestamp" in content
         assert "Memory" in content
 
-    def test_creates_parent_directories(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_creates_parent_directories(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test that parent directories are created."""
         output_path = tmp_path / "reports" / "analysis" / "report.html"
         export_to_html(sample_memory_data, output_path)
 
         assert output_path.exists()
 
-    def test_empty_data_raises_error(self, empty_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_empty_data_raises_error(
+        self, empty_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test that empty data raises ValueError."""
         output_path = tmp_path / "report.html"
         with pytest.raises(ValueError, match="No memory data provided"):
             export_to_html(empty_memory_data, output_path)
 
-    def test_statistics_calculation(self, sample_memory_data: list[tuple[float, float]], tmp_path: Path) -> None:
+    def test_statistics_calculation(
+        self, sample_memory_data: list[tuple[float, float]], tmp_path: Path
+    ) -> None:
         """Test that statistics are calculated correctly in HTML."""
         output_path = tmp_path / "report.html"
         export_to_html(sample_memory_data, output_path)
@@ -181,4 +209,8 @@ class TestExportToHTML:
         expected_peak = max(memories)
 
         # Peak should be in the HTML (with some tolerance for formatting)
-        assert str(int(expected_peak)) in content or f"{expected_peak:.1f}" in content or f"{expected_peak:.2f}" in content
+        assert (  # noqa: E501
+            str(int(expected_peak)) in content
+            or f"{expected_peak:.1f}" in content
+            or f"{expected_peak:.2f}" in content
+        )
