@@ -219,6 +219,6 @@ class TestAnalyzeLiveObjects:
             assert "count" in stats
             assert "total_size_kb" in stats
             assert isinstance(stats["count"], int)
-            assert isinstance(stats["total_size_kb"], (int, float))
+            assert isinstance(stats["total_size_kb"], int | float)
             assert stats["count"] > 0
             assert stats["total_size_kb"] > 0
