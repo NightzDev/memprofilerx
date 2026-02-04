@@ -88,9 +88,7 @@ def run(
 
     console.print(f"[cyan]🧠 Profiling:[/cyan] {script}")
     console.print(f"[cyan]📊 Interval:[/cyan] {interval}s")
-    console.print(
-        f"[cyan]📁 Output:[/cyan] {', '.join(str(p) for p in exports.values())}"
-    )
+    console.print(f"[cyan]📁 Output:[/cyan] {', '.join(str(p) for p in exports.values())}")
 
     # Load and execute the script with profiling
     try:
@@ -118,9 +116,7 @@ def run(
         if "html" in exports:
             # We need to read the JSON data if it exists, or use a dummy for now
             # In a real scenario, we'd capture mem_data from global_tracker
-            console.print(
-                "[yellow]Note:[/yellow] HTML export requires JSON data. Use --format all"
-            )
+            console.print("[yellow]Note:[/yellow] HTML export requires JSON data. Use --format all")
 
         console.print("\n[green]✓[/green] Profiling complete!")
 
@@ -136,14 +132,10 @@ def convert(
     input_file: Annotated[
         Path, typer.Argument(help="Input JSON file with memory data", exists=True)
     ],
-    output: Annotated[
-        Path | None, typer.Option("--output", "-o", help="Output file path")
-    ] = None,
+    output: Annotated[Path | None, typer.Option("--output", "-o", help="Output file path")] = None,
     format: Annotated[
         str,
-        typer.Option(
-            "--format", "-f", help="Output format: png, html, csv", case_sensitive=False
-        ),
+        typer.Option("--format", "-f", help="Output format: png, html, csv", case_sensitive=False),
     ] = "html",
 ) -> None:
     """
@@ -164,8 +156,7 @@ def convert(
             isinstance(item, list) and len(item) == 2 for item in mem_data
         ):
             console.print(
-                "[red]Error:[/red] Invalid JSON format. "
-                "Expected list of [timestamp, memory] pairs."
+                "[red]Error:[/red] Invalid JSON format. Expected list of [timestamp, memory] pairs."
             )
             raise typer.Exit(1) from None
 
