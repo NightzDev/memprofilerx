@@ -15,7 +15,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Intended Audience :: Developers",
     "Topic :: System :: Monitoring",
-    "Topic :: Software Development :: Debugging",
     "Typing :: Typed"
 ]
 readme = "README.md"
