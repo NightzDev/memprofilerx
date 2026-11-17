@@ -187,6 +187,69 @@ def convert(
 
 
 @app.command()
+def leaks(
+    target: Annotated[
+        str, typer.Argument(help="Function to check, as 'path/to/file.py:func' or 'module:func'")
+    ],
+    iterations: Annotated[int, typer.Option("--iterations", "-n", help="Measured calls")] = 20,
+    warmup: Annotated[int, typer.Option("--warmup", "-w", help="Unmeasured warm-up calls")] = 3,
+    threshold: Annotated[
+        str, typer.Option("--threshold", "-t", help="Ignore lines growing less than this")
+    ] = "1 KB",
+    json_output: Annotated[bool, typer.Option("--json", help="Print report as JSON")] = False,
+) -> None:
+    """
+    Hunt memory leaks: call a function repeatedly and show the exact lines that leak.
+
+    Exits with code 1 if leaks are found, so it can gate CI.
+
+    Example:
+        memx leaks app/handlers.py:handle_request -n 50
+    """
+    import importlib
+
+    from memprofilerx.leaks import find_leaks
+
+    if ":" not in target:
+        console.print("[red]✗[/red] Target must look like 'file.py:func' or 'module:func'")
+        raise typer.Exit(code=2)
+    location, func_name = target.rsplit(":", 1)
+
+    try:
+        if location.endswith(".py"):
+            path = Path(location).resolve()
+            sys.path.insert(0, str(path.parent))
+            spec = importlib.util.spec_from_file_location(path.stem, path)
+            if spec is None or spec.loader is None:
+                raise ImportError(f"Cannot load {path}")
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[path.stem] = module
+            spec.loader.exec_module(module)
+        else:
+            sys.path.insert(0, str(Path.cwd()))
+            module = importlib.import_module(location)
+        func = getattr(module, func_name)
+    except (ImportError, AttributeError, OSError) as e:
+        console.print(f"[red]✗[/red] Could not load {target}: {e}")
+        raise typer.Exit(code=2) from e
+
+    console.print(f"[cyan]🔍 Hunting leaks in {target} ({iterations} iterations)...[/cyan]")
+    report = find_leaks(func, iterations=iterations, warmup=warmup, threshold=threshold)
+
+    if json_output:
+        print(json.dumps(report.to_dict(), indent=2))
+    else:
+        console.print(
+            str(report),
+            style="red" if report.has_leaks else "green",
+            highlight=False,
+            soft_wrap=True,
+        )
+    if report.has_leaks:
+        raise typer.Exit(code=1)
+
+
+@app.command()
 def version() -> None:
     """Show MemProfilerX version."""
     console.print(f"[cyan]MemProfilerX[/cyan] version [green]{__version__}[/green]")

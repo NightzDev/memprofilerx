@@ -5,6 +5,17 @@ All notable changes to MemProfilerX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-11-17
+
+### Added
+- **Leak Hunter**: `find_leaks()`, `find_leaks_async()` and `LeakDetector` report the exact
+  source lines whose memory grows consistently across iterations.
+- **`memx leaks file.py:func`** CLI command (exit code 1 on leaks, `--json` output).
+- **Pytest plugin** (auto-registered): `@pytest.mark.no_leaks`, `@pytest.mark.memory_limit`
+  and the `memx_leaks` fixture.
+- **Universal web middleware**: `MemoryMiddleware` (ASGI) and `WSGIMemoryMiddleware` (WSGI)
+  with per-route stats, leak suspects, JSON stats endpoint, alerts and response headers.
+
 ## [0.2.0] - 2024-01-XX
 
 ### 🎉 Major Release - Production Ready

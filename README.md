@@ -14,6 +14,97 @@ Modern, type-safe, and developer-friendly. From quick debugging to production mo
 
 ---
 
+## ✨ What's New in v0.3.0
+
+### 🕵️ Leak Hunter — find the exact line that leaks
+
+```python
+from memprofilerx import find_leaks
+
+report = find_leaks(handle_request, payload, iterations=50)
+print(report)
+```
+
+```
+MemProfilerX leak report: 50 iterations (after 3 warm-up), traced memory +91.2 KB (+1.8 KB/iteration)
+  ✘ 1 leak suspect(s):
+  1. app/sessions.py:42  +91.2 KB total, +1.8 KB/iter, +200 objects, grew in 100% of iterations
+       → _sessions[user_id] = {"user": user, "payload": payload}
+```
+
+It runs your code repeatedly, diffs `tracemalloc` snapshots and only reports lines that grow
+**consistently** — warm-up caches and one-off allocations are ignored. Works with sync and
+`async` functions.
+
+From the terminal (exit code `1` on leaks — drop it in CI):
+
+```bash
+memx leaks app/handlers.py:handle_request -n 50
+memx leaks mypkg.jobs:process --json
+```
+
+For loops you already have:
+
+```python
+from memprofilerx import LeakDetector
+
+with LeakDetector(raise_on_leak=True) as det:
+    for msg in messages:
+        consume(msg)
+        det.checkpoint()
+```
+
+### 🧪 Pytest plugin — stop memory regressions in CI
+
+Installed automatically. No config needed.
+
+```python
+import pytest
+
+@pytest.mark.no_leaks(iterations=30, threshold="10 KB")
+def test_handler_does_not_leak(client):
+    client.get("/orders/1")          # body runs 30x; fails pointing to the leaking line
+
+@pytest.mark.memory_limit("50 MB")
+def test_import_csv():
+    import_big_csv("fixtures/big.csv")  # fails if Python allocations peak above 50 MB
+
+def test_service(memx_leaks):
+    memx_leaks(service.process, payload, iterations=50)
+```
+
+### 🌐 Universal web middleware — which endpoint is eating my memory?
+
+One middleware, **every Python web framework**: anything ASGI (FastAPI, Starlette, Litestar,
+Quart, Django ASGI, BlackSheep…) or WSGI (Flask, Django, Bottle, Falcon, Pyramid…).
+
+```python
+# FastAPI / Starlette / Litestar
+from memprofilerx import MemoryMiddleware
+app.add_middleware(MemoryMiddleware, stats_path="/__memx__", alert_threshold="50 MB")
+
+# Flask
+from memprofilerx import WSGIMemoryMiddleware
+app.wsgi_app = WSGIMemoryMiddleware(app.wsgi_app, stats_path="/__memx__")
+
+# Django (asgi.py / wsgi.py)
+application = MemoryMiddleware(get_asgi_application())
+application = WSGIMemoryMiddleware(get_wsgi_application())
+```
+
+* Per-route stats (`/users/42` and `/users/7` are grouped as `/users/{id}`)
+* `GET /__memx__` → JSON with retained memory per route and **leak suspects**
+* `alert_threshold` + `on_alert` callback for requests that blow up RSS (send to Sentry/Slack/logs)
+* `add_headers=True` → `X-MemX-RSS-MB` / `X-MemX-Delta-MB` response headers
+* `exclude_paths=["/health", "/static"]`, custom `path_normalizer`, `on_request` hook
+* `middleware.stats.report()` prints a readable table
+
+> ⚠️ Don't expose `stats_path` publicly — leave it `None` or protect it.
+> RSS is process-wide: under heavy concurrency single-request deltas overlap, but
+> per-route retained growth over many requests remains a reliable leak signal.
+
+---
+
 ## ✨ What's New in v0.2.0
 
 - 🎯 **CLI Tool**: `memx run script.py` - profile any script without code changes
